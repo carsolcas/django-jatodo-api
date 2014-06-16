@@ -7,6 +7,6 @@ except ImportError:
     from distutils.core import setup
 
 setup(
-    name='django-chunked-upload',
-    packages=['chunked_upload'],
+    name='django-jatodo-api',
+    packages=['jatodo_api'],
 )
