@@ -13,7 +13,7 @@ class ProjectAdmin(admin.ModelAdmin):
     raw_id_fields = ('owner',)
 
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description', 'state', )
+    list_display = ('title', 'description', 'state', 'project')
 
 
 admin.site.register(Project, ProjectAdmin)

@@ -28,7 +28,7 @@ class APIBaseCase(TestCase):
         self.detail_error = 'Authentication credentials were not provided.'
 
 
-class APIRunsCase(APIBaseCase):
+class APIProjectCase(APIBaseCase):
     def test_projects(self):
         url = reverse('todo-projects')
 
@@ -90,6 +90,70 @@ class APIRunsCase(APIBaseCase):
         self.assertEquals(content['name'], 'Project title')
 
         #Delete project
+        response = self.client.delete(url, HTTP_AUTHORIZATION=self.auth_string)
+        self.assertEquals(response.status_code, 204)
+
+        #Now get the object again
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth_string)
+        self.assertEquals(response.status_code, 404)
+
+
+class APITaskCase(APIBaseCase):
+    def setUp(self):
+        super(APITaskCase, self).setUp()
+        self.project = Project(name='Project title',
+                          description='Description text',
+                          owner=self.user)
+        self.project.save()
+
+    def test_tasks(self):
+        url = reverse('todo-tasks')
+
+        # Get tasks without login
+        response = self.client.get(url)
+        self.assertEquals(response.status_code, 403)
+        content = json.loads(response.content)
+        self.assertEquals(content['detail'], self.detail_error)
+
+        # Get tasks with login
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth_string)
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(content, [])
+
+        # Create new task
+        response = self.client.post(url,{'project':1,
+                                         'user':1,
+                                         'title':'Task Title',
+                                         'description':'Task Description',
+                                        },
+                                    HTTP_AUTHORIZATION=self.auth_string)
+        self.assertEquals(response.status_code, 201)
+        content = json.loads(response.content)
+        self.assertEquals(len(content), 1)
+
+        # Get tasks with login
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth_string)
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(len(content), 1)
+
+    def test_task(self):
+        task = Task(title='Task title',
+                    description='Description text',
+                    project=self.project,
+                    actual_user=self.user)
+        task.save()
+
+        url = reverse('todo-task', args=(1,))
+
+        #Get task with login
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth_string)
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(content['title'], 'Task title')
+
+        #Delete task
         response = self.client.delete(url, HTTP_AUTHORIZATION=self.auth_string)
         self.assertEquals(response.status_code, 204)
 
