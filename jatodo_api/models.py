@@ -38,3 +38,13 @@ class Task(Model):
 
     def __unicode__(self):
         return self.title
+
+
+class TaskTime(Model):
+    user = ForeignKey(User)
+    task = ForeignKey(Task)
+    start_date = DateTimeField(_('start date'))
+    end_date = DateTimeField(_('End date'))
+
+    def __unicode__(self):
+        return "%s - %s" % (self.task.title, self.user.username)

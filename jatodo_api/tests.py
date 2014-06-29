@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 
 # Import from here
-from .models import Project, Task
+from .models import Project, Task, TaskTime
 
 class APIBaseCase(TestCase):
     def setUp(self):
@@ -89,6 +89,16 @@ class APIProjectCase(APIBaseCase):
         content = json.loads(response.content)
         self.assertEquals(content['name'], 'Project title')
 
+        #Update project with login
+        response = self.client.post(url, 
+                {'description':'New description',},
+                HTTP_AUTHORIZATION=self.auth_string)
+        self.assertEquals(response.status_code, 200)
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth_string)
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(content['description'], 'New description')
+
         #Delete project
         response = self.client.delete(url, HTTP_AUTHORIZATION=self.auth_string)
         self.assertEquals(response.status_code, 204)
@@ -160,3 +170,48 @@ class APITaskCase(APIBaseCase):
         #Now get the object again
         response = self.client.get(url, HTTP_AUTHORIZATION=self.auth_string)
         self.assertEquals(response.status_code, 404)
+
+
+class APITaskTimeCase(APIBaseCase):
+    def setUp(self):
+        super(APITaskTimeCase, self).setUp()
+        self.project = Project(name='Project title',
+                          description='Description text',
+                          owner=self.user)
+        self.project.save()
+
+        task = Task(title='Task title',
+                    description='Description text',
+                    project=self.project,
+                    actual_user=self.user)
+        task.save()
+
+    def test_tasktime(self):
+        url = reverse('todo-tasktime', args=(1,))
+
+        # Get tasks without login
+        response = self.client.get(url)
+        self.assertEquals(response.status_code, 403)
+        content = json.loads(response.content)
+        self.assertEquals(content['detail'], self.detail_error)
+
+        # Get tasks with login
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth_string)
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(content, [])
+
+        # Create new task time
+        response = self.client.post(url,{'start_date':'20140629170001',
+                                         'end_date':'20140629174433',
+                                        },
+                                    HTTP_AUTHORIZATION=self.auth_string)
+        self.assertEquals(response.status_code, 201)
+        content = json.loads(response.content)
+        self.assertEquals(len(content), 1)
+
+        # Get tasks with login
+        response = self.client.get(url, HTTP_AUTHORIZATION=self.auth_string)
+        self.assertEquals(response.status_code, 200)
+        content = json.loads(response.content)
+        self.assertEquals(len(content), 1)

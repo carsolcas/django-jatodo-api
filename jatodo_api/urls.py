@@ -5,6 +5,7 @@ from django.conf.urls.defaults import url
 from django.conf.urls.defaults import patterns
 
 from .views import ProjectsView, ProjectView, TasksView, TaskView
+from .views import TaskTimeView
 
 
 urlpatterns = patterns('',
@@ -13,4 +14,7 @@ urlpatterns = patterns('',
         name='todo-project'),
     url(r'^tasks/$', TasksView.as_view(), name='todo-tasks'),
     url(r'^tasks/(?P<task_id>\d+)/$', TaskView.as_view(), name='todo-task'),
+
+    url(r'^tasks/(?P<task_id>\d+)/time$', TaskTimeView.as_view(), 
+        name='todo-tasktime'),
 )
