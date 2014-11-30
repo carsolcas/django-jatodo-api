@@ -4,17 +4,18 @@
 from django.conf.urls.defaults import url
 from django.conf.urls.defaults import patterns
 
-from .views import ProjectsView, ProjectView, TasksView, TaskView
-from .views import TaskTimeView
+from .views import ProjectList, ProjectDetail
+from .views import TaskTimeView, TaskList, TaskDetail
 
 
 urlpatterns = patterns('',
-    url(r'^projects/$', ProjectsView.as_view(), name='todo-projects'),
-    url(r'^projects/(?P<project_id>\d+)/$', ProjectView.as_view(),
-        name='todo-project'),
-    url(r'^tasks/$', TasksView.as_view(), name='todo-tasks'),
-    url(r'^tasks/(?P<task_id>\d+)/$', TaskView.as_view(), name='todo-task'),
+    url(r'^projects/$', ProjectList.as_view(), name='projects-list'),
+    url(r'^projects/(?P<pk>\d+)/$', ProjectDetail.as_view(),
+        name='project-detail'),
 
-    url(r'^tasks/(?P<task_id>\d+)/time$', TaskTimeView.as_view(), 
-        name='todo-tasktime'),
+    url(r'^tasks/$', TaskList.as_view(), name='tasks-list'),
+    url(r'^tasks/(?P<pk>\d+)/$', TaskDetail.as_view(), name='task-detail'),
+
+    url(r'^tasks/(?P<task_id>\d+)/time/$', TaskTimeView.as_view(),
+        name='tasktime-list'),
 )
